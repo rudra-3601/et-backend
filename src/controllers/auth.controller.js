@@ -1,10 +1,10 @@
 import User from "../models/User.js";
-import {comparePassword,hashPassword} from "../utils/hasPass.js"
+import { comparePassword, hashPassword } from "../utils/brcyptPass.js";
 import { generateToken } from "../utils/generateToken.js";
 
 const register = async (req, res) => {
   console.log("Registering user");
-  const { fullName, email, password } = req.body;
+  const { fullName, email, password, userProfilePic } = req.body;
 
   try {
     if (!fullName || !email || !password) {
@@ -35,6 +35,7 @@ const register = async (req, res) => {
       fullName,
       email,
       password: hashedPassword,
+      userProfilePic,
     });
 
     await newUser.save();
@@ -56,6 +57,7 @@ const register = async (req, res) => {
         id: newUser._id,
         fullName: newUser.fullName,
         email: newUser.email,
+        userProfilePic: newUser.userProfilePic,
       },
     });
   } catch (error) {
@@ -67,7 +69,7 @@ const register = async (req, res) => {
   }
 };
 
-const login = async (req,res) => {
+const login = async (req, res) => {
   const { email, password } = req.body;
   try {
     if (!email || !password) {
@@ -95,6 +97,12 @@ const login = async (req,res) => {
     return res.status(200).json({
       success: true,
       message: "Login successful",
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        userProfilePic: user.userProfilePic,
+      },
       token,
     });
   } catch (error) {
@@ -106,4 +114,21 @@ const login = async (req,res) => {
   }
 };
 
-export { register, login };
+const getUserInfo = async (req, res) => {
+  try {
+    return res.status(200).json({
+      success: true,
+      message: "User found",
+      user: req.user, 
+    });
+  } catch (error) {
+    console.error("Error in getUserInfo:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+export { register, login, getUserInfo };
