@@ -130,5 +130,4 @@ const getUserInfo = async (req, res) => {
   }
 };
 
-
 export { register, login, getUserInfo };
