@@ -32,35 +32,45 @@ const addExpense = async (req, res) => {
     });
   } catch (error) {
     console.error("Error adding expense:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Error adding expense",
-    });
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
 const getExpenses = async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.user._id;
+  const { page, limit, all } = req.query;
+
   try {
-    const expenses = await Expense.find({ user: userId });
-    console.log(expenses);
-    if (!expenses) {
-      return res.status(404).json({
-        success: false,
-        message: "No expenses found for this user",
-      });
+    let expenses = [];
+    let totalExpenses = 0;
+
+    if (all === "true") {
+      expenses = await Expense.find({ user: userId }).sort({ createdAt: -1 });
+      totalExpenses = expenses.length;
+    } else {
+      const pageNumber = Math.max(parseInt(page) || 1, 1);
+      const pageSize = Math.max(parseInt(limit) || 10, 1);
+      const skip = (pageNumber - 1) * pageSize;
+
+      totalExpenses = await Expense.countDocuments({ user: userId });
+
+      expenses = await Expense.find({ user: userId }).sort({ createdAt: -1 }).skip(skip).limit(pageSize);
     }
+
     return res.status(200).json({
       success: true,
-      message: "Expenses found",
+      message: expenses.length ? "Expenses fetched successfully" : "No expenses found",
+      totalExpenses,
       expenses,
+      ...(all !== "true" && {
+        page: parseInt(page) || 1,
+        limit: parseInt(limit) || 10,
+        totalPage: Math.ceil(totalExpenses / (parseInt(limit) || 10)),
+      }),
     });
   } catch (error) {
     console.error("Error getting expenses:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Error getting expenses",
-    });
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -88,10 +98,7 @@ const updateExpense = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in updateExpense:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error. Could not update expense.",
-    });
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -113,10 +120,7 @@ const deleteExpense = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in deleteExpense:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error. Could not delete expense.",
-    });
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 

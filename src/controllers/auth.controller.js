@@ -62,10 +62,7 @@ const register = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in register:", error);
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -107,10 +104,7 @@ const login = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in login:", error);
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -119,14 +113,11 @@ const getUserInfo = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "User found",
-      user: req.user, 
+      user: req.user,
     });
   } catch (error) {
     console.error("Error in getUserInfo:", error);
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
