@@ -4,6 +4,14 @@ A minimal REST API for managing personal budgets, incomes, and expenses. Built w
 
 ---
 
+## 🖼️ Preview
+
+Here’s how the API root looks:
+
+![API Root Screenshot](screenshots/allRoutes.png)
+
+---
+
 ## 🚀 Features
 
 - User Authentication (JWT)
