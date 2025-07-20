@@ -3,8 +3,7 @@ import { comparePassword, hashPassword } from "../utils/brcyptPass.js";
 import { generateToken } from "../utils/generateToken.js";
 
 const register = async (req, res) => {
-  console.log("Registering user");
-  const { fullName, email, password, userProfilePic } = req.body;
+  const { fullName, email, password } = req.body;
 
   try {
     if (!fullName || !email || !password) {
@@ -35,12 +34,10 @@ const register = async (req, res) => {
       fullName,
       email,
       password: hashedPassword,
-      userProfilePic,
     });
 
     await newUser.save();
-    console.log("User created");
-
+ 
     const token = generateToken(newUser);
     if (!token) {
       return res.status(500).json({
@@ -49,7 +46,7 @@ const register = async (req, res) => {
       });
     }
 
-    return res.status(201).json({
+    return res.status(200).json({
       success: true,
       message: "User created successfully",
       token,
@@ -57,7 +54,6 @@ const register = async (req, res) => {
         id: newUser._id,
         fullName: newUser.fullName,
         email: newUser.email,
-        userProfilePic: newUser.userProfilePic,
       },
     });
   } catch (error) {
@@ -98,7 +94,6 @@ const login = async (req, res) => {
         id: user._id,
         fullName: user.fullName,
         email: user.email,
-        userProfilePic: user.userProfilePic,
       },
       token,
     });

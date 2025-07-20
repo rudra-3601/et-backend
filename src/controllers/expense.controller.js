@@ -1,19 +1,16 @@
 import Expense from "../models/Expense.js";
+import exportToExcel from "../utils/exportToExcel.js";
 
 const addExpense = async (req, res) => {
-  console.log(req.user.id);
-  const userId = req.user.id;
+  const userId = req.user._id;
   const { expenseName, expenseAmount, category, date, paymentMethod, description } = req.body;
 
   if (!expenseName || !expenseAmount || !category || !paymentMethod) {
-    return res.status(400).json({
-      success: false,
-      message: "Please provide all required fields",
-    });
+    return res.status(400).json({ success: false, message: "Please provide all required fields" });
   }
 
   try {
-    const newExpense = new Expense({
+    const expense = await Expense.create({
       user: userId,
       expenseName,
       expenseAmount,
@@ -23,12 +20,10 @@ const addExpense = async (req, res) => {
       description,
     });
 
-    await newExpense.save();
-
-    return res.status(201).json({
+    return res.status(200).json({
       success: true,
       message: "Expense added successfully",
-      expense: newExpense,
+      expense,
     });
   } catch (error) {
     console.error("Error adding expense:", error);
@@ -76,7 +71,7 @@ const getExpenses = async (req, res) => {
 
 const updateExpense = async (req, res) => {
   const { id } = req.params;
-  const userId = req.user.id;
+  const userId = req.user._id;
 
   try {
     const updatedExpense = await Expense.findOneAndUpdate({ _id: id, user: userId }, req.body, {
@@ -104,7 +99,7 @@ const updateExpense = async (req, res) => {
 
 const deleteExpense = async (req, res) => {
   const { id } = req.params;
-  const userId = req.user.id;
+  const userId = req.user._id;
 
   try {
     const deleteExpense = await Expense.findOneAndDelete({ _id: id, user: userId });
@@ -124,4 +119,35 @@ const deleteExpense = async (req, res) => {
   }
 };
 
-export { addExpense, getExpenses, updateExpense, deleteExpense };
+const exportExpensesToExcel = async (req, res) => {
+  const userId = req.user._id;
+
+  try {
+    const expenses = await Expense.find({ user: userId }).sort({ createdAt: -1 });
+    if (!expenses.length) {
+      return res.status(404).json({
+        success: false,
+        message: "No expenses found",
+      });
+    }
+
+    const expenseData = expenses.map((expense) => ({
+      ID: expense._id.toString(),
+      Title: expense.title,
+      Amount: expense.amount,
+      Category: expense.category,
+      Description: expense.description,
+      Date: expense.createdAt.toISOString().split("T")[0],
+    }));
+
+    return exportToExcel(expenseData, "Expenses", "expenses.xlsx", res);
+  } catch (error) {
+    console.error("Error in exportExpensesToExcel:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+export { addExpense, getExpenses, updateExpense, deleteExpense, exportExpensesToExcel };

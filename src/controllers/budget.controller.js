@@ -1,4 +1,5 @@
 import Budget from "../models/Budget.js";
+import exportToExcel from "../utils/exportToExcel.js";
 const addBudget = async (req, res) => {
   const { amount, month, year } = req.body;
   const userId = req.user._id;
@@ -60,7 +61,7 @@ const getCurrentBudget = async (req, res) => {
   const month = now.toLocaleString("default", { month: "long" });
   const year = now.getFullYear();
 
-  const userId = req.user.id;
+  const userId = req.user._id;
   try {
     const budget = await Budget.findOne({ user: userId, month: month, year: year });
     if (!budget) {
@@ -89,7 +90,7 @@ const getBudgetById = async (req, res) => {
 };
 const updateBudget = async (req, res) => {
   const { id } = req.params;
-  const userId = req.user.id;
+  const userId = req.user._id;
 
   try {
     const updateBudget = await Budget.findOneAndUpdate({ _id: id, user: userId }, req.body, {
@@ -107,7 +108,7 @@ const updateBudget = async (req, res) => {
 };
 const deleteBudget = async (req, res) => {
   const { id } = req.params;
-  const userId = req.user.id;
+  const userId = req.user._id;
   try {
     const deleteBudget = await Budget.findOneAndDelete({ _id: id, user: userId });
     if (!deleteBudget) {
@@ -119,5 +120,35 @@ const deleteBudget = async (req, res) => {
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+const exportBudgetsToExcel = async (req, res) => {
+  const userId = req.user._id;
 
-export { addBudget, getAllBudgets, getCurrentBudget, getBudgetById, updateBudget, deleteBudget };
+  try {
+    const budgets = await Budget.find({ user: userId }).sort({ createdAt: -1 });
+
+    if (!budgets.length) {
+      return res.status(404).json({
+        success: false,
+        message: "No budgets found",
+      });
+    }
+
+    const budgetData = budgets.map((budget) => ({
+      ID: budget._id.toString(),
+      Amount: budget.amount,
+      Month: budget.month,
+      Year: budget.year,
+      DateCreated: budget.createdAt.toISOString().split("T")[0],
+    }));
+
+    return exportToExcel(budgetData, "Budgets", "budgets.xlsx", res);
+  } catch (error) {
+    console.error("Error in exportBudgetsToExcel:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+export { addBudget, getAllBudgets, getCurrentBudget, getBudgetById, updateBudget, deleteBudget, exportBudgetsToExcel };

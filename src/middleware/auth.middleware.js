@@ -3,10 +3,14 @@ import User from "../models/User.js";
 
 const authMiddleware = async (req, res, next) => {
   const authHeader = req.headers.authorization;
+  const queryToken = req.query.token;
+
   let token;
 
   if (authHeader && authHeader.startsWith("Bearer ")) {
     token = authHeader.split(" ")[1];
+  } else if (queryToken) {
+    token = queryToken;
   }
 
   if (!token) {

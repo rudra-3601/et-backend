@@ -4,6 +4,7 @@ import authMiddleware from "../middleware/auth.middleware.js";
 import {
   addBudget,
   deleteBudget,
+  exportBudgetsToExcel,
   getAllBudgets,
   getBudgetById,
   getCurrentBudget,
@@ -17,6 +18,7 @@ router.use(authMiddleware);
 router.post("/", addBudget);
 router.get("/", getAllBudgets);
 router.get("/current", getCurrentBudget);
+router.get("/export", exportBudgetsToExcel);
 router.get("/:id", getBudgetById);
 router.patch("/:id", updateBudget);
 router.delete("/:id", deleteBudget);
