@@ -15,12 +15,17 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(
+  cors({
+    origin: `${process.env.CLIENT_URL || "http://localhost:3000"}`,
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
+  })
+);
 
 connectDB();
 
 const port = process.env.PORT || 5000;
-
 
 app.use("/", homeRoute);
 app.use("/api/auth", authRoute);
